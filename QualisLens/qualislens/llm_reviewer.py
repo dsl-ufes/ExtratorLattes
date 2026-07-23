@@ -19,7 +19,7 @@ from typing import Optional
 
 import requests
 
-from constants import (
+from .constants import (
     OLLAMA_MODEL,
     OLLAMA_TIMEOUT_SECONDS,
     OLLAMA_URL,
@@ -58,6 +58,7 @@ Só o ignore se o tema for claramente diferente.
    NUNCA escolha apenas porque é o "menos pior".
 
 Nome escrito: "{nome_entrada}"
+Título do artigo: "{titulo_artigo}"
 Ano do artigo: {ano}
 
 Candidatos:
@@ -265,6 +266,7 @@ def _revisar_simples(
 
     return {
         "qualis_estrato": melhor.get("estrato") if melhor else None,
+        "qualis_sigla": melhor.get("sigla") if melhor else None,
         "qualis_nome_oficial": melhor.get("nome") if melhor else None,
         "qualis_quadrienio": melhor.get("quadrienio") if melhor else None,
         "qualis_score_llm": confianca_llm,
@@ -361,6 +363,7 @@ def _revisar_duplo(
 
     return {
         "qualis_estrato": melhor.get("estrato") if melhor else None,
+        "qualis_sigla": melhor.get("sigla") if melhor else None,
         "qualis_nome_oficial": melhor.get("nome") if melhor else None,
         "qualis_quadrienio": melhor.get("quadrienio") if melhor else None,
         "qualis_score_llm": confianca,
@@ -403,7 +406,8 @@ def revisar(
         Score do melhor candidato fuzzy.
     modelos:
         Lista com 1 ou 2 nomes de modelos Ollama.
-        Se None, usa a constante OLLAMA_MODEL com modelo único.
+        Deve conter 1 ou 2 modelos. Sem uma lista explícita, nenhuma chamada é
+        feita e a função lança ``ValueError``.
     titulo_artigo:
         Título do artigo — usado como contexto temático para ajudar o LLM
         a verificar se o candidato escolhido é compatível com o tema.
@@ -418,6 +422,9 @@ def revisar(
         - qualis_llm_motivo
         - _llm_escolha_idx  (índice 0-based na lista de candidatos, ou None)
     """
+    if not modelos:
+        raise ValueError("A revisão por LLM exige ao menos um modelo explícito")
+
     candidatos_texto = _formatar_candidatos(candidatos)
     prompt = _PROMPT_TEMPLATE.format(
         nome_entrada=nome_entrada,
@@ -426,7 +433,7 @@ def revisar(
         candidatos_texto=candidatos_texto,
     )
 
-    modelos_efetivos = modelos if modelos else [OLLAMA_MODEL]
+    modelos_efetivos = modelos
 
     if len(modelos_efetivos) >= 2:
         return _revisar_duplo(prompt, candidatos, score_fuzzy, nome_entrada, modelos_efetivos[:2])

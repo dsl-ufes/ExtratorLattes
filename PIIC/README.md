@@ -117,12 +117,16 @@ ______
 
 ### Arquivo Qualis
 
-Um arquivo em formato **csv** com uma primeira coluna **ISSN** e uma segunda coluna **Estrato**. O arquivo qualis-unificado.csv é gerado através de um programa de pré-processamento contido na pasta QualisNovo. 
+Um arquivo em formato **csv** com uma primeira coluna **ISSN** e uma segunda coluna **Estrato**. Use `Classificador/qualis-unificado.csv`.
 
-Esse arquivo é produzido apartir do arquivo obtido na [Plataforma Sucupira](https://sucupira.capes.gov.br/sucupira/public/consultas/coleta/veiculoPublicacaoQualis/listaConsultaGeralPeriodicos.jsf) com as classificações dos periódicos em todas as áreas. 
+Atualize-o a partir da raiz do repositório:
 
+```bash
+python QualisNovo/criaArquivoQualis.py
+```
 
-Além do arquivo da Plataforma Sucupira, também é utilizado um arquivo disponibilizado pela ferramenta [QLattes](https://github.com/nabormendonca/qlattes/tree/main/dist/data). Esse arquivo é utilizado para fazer associações de issn, um artigo pode ter dois issn: um print-issn e um e-issn. Ambos issn devem estar associados a um mesmo artigo e devem ser considerados no cálculo da nota.
+O comando baixa e valida as bases oficiais da Plataforma Sucupira. Em seguida,
+ele inclui aliases Print-ISSN/E-ISSN das fontes versionadas em `QualisNovo/` - arquivos disponibilizados pela ferramenta [QLattes](https://github.com/nabormendonca/qlattes/tree/main/dist/data). Esse arquivo é utilizado para fazer associações de issn, um artigo pode ter dois issn: um print-issn e um e-issn. Ambos issn devem estar associados a um mesmo artigo e devem ser considerados no cálculo da nota.
 
 
 |ISSN|Estrato|

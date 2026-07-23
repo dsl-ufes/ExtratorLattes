@@ -1,107 +1,102 @@
-import sys
+"""Atualiza a projeção Qualis de periódicos com aliases históricos de ISSN."""
+
+import csv
+import hashlib
 import json
 import os
+import sys
+import tempfile
+from pathlib import Path
+
 import pandas as pd
 
-def dfQualisToDict(dfQualis):
-    #dfQualis.set_index('ISSN', inplace = True)
 
-    return dfQualis['Estrato'].to_dict()
+RAIZ = Path(__file__).resolve().parents[1]
+if str(RAIZ) not in sys.path:
+    sys.path.insert(0, str(RAIZ))
 
-def dfISSNToDict(dataframe):
+from QualisLens.scripts import atualizar_sucupira
 
-    #Cria um dicionário com a chave Print ISSN e valor EISSN
-    d1 = dataframe.set_index('Print-ISSN')['E-ISSN'].to_dict()
-    #Cria um dicionário com a chave EISSN e valor Print ISSN
-    d2 = dataframe.set_index('E-ISSN')['Print-ISSN'].to_dict()
-    
-    return d1, d2
 
-def qualisDict(dictQualis, dfISSN):
-    pIssn, eIssn = dfISSNToDict(dfISSN)
+BASE = Path(__file__).resolve().parent
+ARQUIVO_QUALIS = RAIZ / "Classificador" / "qualis-unificado.csv"
+ARQUIVO_METADATA = RAIZ / "QualisLens" / "base" / "metadata.json"
 
-    for key in list(dictQualis.keys()):
-        if key in pIssn:
-            value = pIssn[key]
-            if not value in dictQualis:
-                dictQualis[value] = dictQualis[key]
-        elif key in eIssn:
-            value = eIssn[key]
-            if not value in dictQualis:
-                dictQualis[value] = dictQualis[key]
-    
-    return dictQualis
 
-def jsonToDataFrame(dirPath):
+def _issn(valor):
+    texto = str(valor or "").strip().upper().replace(" ", "")
+    if len(texto) == 8 and "-" not in texto:
+        texto = texto[:4] + "-" + texto[4:]
+    return texto if len(texto) == 9 and texto[4] == "-" else ""
 
-    jsonFiles = [os.path.join(dirPath, x) for x in os.listdir(dirPath) if x.endswith('.json')]
-    
-    data = []
-    
-    for path in jsonFiles:
-        with open(path) as f:
-            data += json.load(f)
-    
-    dfJson = pd.DataFrame(data=data)
-    
-    dfJson = dfJson[['issn', 'e-issn']].map(lambda x: None if x == '' else x)
-    
-    dfJson.dropna(inplace=True)
-    
-    # Corrigindo anomalias nos issns como no issn: 0370-629X do json part-1
-    dfJson = dfJson.map(lambda x: x[:9] if len(x) > 9 else x)
-    
-    dfJson.columns = ['Print-ISSN', 'E-ISSN']
-    
-    return dfJson
-    
 
-if __name__ == '__main__':
-    fileName = sys.argv[1]
-    
-    dfQualis = pd.read_csv(fileName)
+def _pares_csv(caminho, primeira, segunda, separador=","):
+    tabela = pd.read_csv(caminho, sep=separador, dtype=str).fillna("")
+    return [(_issn(a), _issn(b)) for a, b in zip(tabela[primeira], tabela[segunda])]
 
-    dfQualis = dfQualis.drop('Área de Avaliação', axis = 'columns')
-    dfQualis = dfQualis.drop('Título', axis = 'columns')
 
-    dfQualis = dfQualis.groupby('ISSN').min()
+def _pares_json(diretorio):
+    pares = []
+    for caminho in sorted(Path(diretorio).glob("*.json")):
+        for item in json.loads(caminho.read_text(encoding="utf-8")):
+            pares.append((_issn(item.get("issn")), _issn(item.get("e-issn"))))
+    return pares
 
-    #Tratando o arquivo issn_list_xlsx
-    dfISSN = pd.read_csv('issn_list_xlsx.csv')
-    #Cria um dataframe apenas com as colunas Print ISSN e EISSN
-    dfISSN = dfISSN[['Print-ISSN','E-ISSN']]
-    
-    #Elimina todas as linhas que possuem algum valor em uma das colunas vazio
-    # e altera o issn de XXXXXXXX para XXXX-XXXX, caso necessário
-    dfISSN = dfISSN.dropna().map(lambda x: str(x)[:4] + '-' + str(x)[4:] if not str(x)[4] == '-' else x)
 
-    #Tratando o arquivo ImpactFactor
-    dfFactor = pd.read_csv('ImpactFactor2024.csv', sep=';')
+def pares_aliases():
+    pares = _pares_csv(BASE / "issn_list_xlsx.csv", "Print-ISSN", "E-ISSN")
+    pares += _pares_csv(BASE / "ImpactFactor2024.csv", "ISSN", "EISSN", ";")
+    pares += _pares_json(BASE / "ISSNJson")
+    return [(a, b) for a, b in pares if a and b and a != b]
 
-    dfFactor = dfFactor[['ISSN','EISSN']]
-    dfFactor.columns = ['Print-ISSN','E-ISSN']
 
-    dfFactor.dropna(inplace=True)
+def _publicar_csv_atomico(caminho, linhas):
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", newline="", delete=False, dir=caminho.parent) as arquivo:
+        temporario = Path(arquivo.name)
+        escritor = csv.DictWriter(arquivo, fieldnames=("ISSN", "Estrato"), lineterminator="\n")
+        escritor.writeheader()
+        escritor.writerows(linhas)
+    os.replace(temporario, caminho)
 
-    # Faz a associação dos issn que tem no Qualis com os issn que tem no arquivo xlsx
-    data = qualisDict(dfQualisToDict(dfQualis), dfISSN)
-    
-    # Faz a associação dos issn que tem no Qualis com os issn que tem nos arquivos json
-    dataJson = qualisDict(dfQualisToDict(dfQualis), jsonToDataFrame('ISSNJson'))
 
-    # Faz a associação dos issn que tem no Qualis com os issn que tem no arquivo ImpactFactor
-    dataFactor = qualisDict(dfQualisToDict(dfQualis), dfFactor)
+def enriquecer_aliases(caminho=ARQUIVO_QUALIS):
+    with Path(caminho).open(encoding="utf-8-sig", newline="") as arquivo:
+        estratos = {linha["ISSN"]: linha["Estrato"] for linha in csv.DictReader(arquivo)}
+    adicionados = 0
+    for primeiro, segundo in pares_aliases():
+        if primeiro in estratos and segundo not in estratos:
+            estratos[segundo] = estratos[primeiro]
+            adicionados += 1
+        elif segundo in estratos and primeiro not in estratos:
+            estratos[primeiro] = estratos[segundo]
+            adicionados += 1
+    _publicar_csv_atomico(Path(caminho), ({"ISSN": issn, "Estrato": estrato} for issn, estrato in sorted(estratos.items())))
+    return adicionados, len(estratos)
 
-    # Une as duas bases
-    data.update(dataJson)
 
-    data.update(dataFactor)
-    
-    c1 = list(data.keys())
-    c2 = [data[key] for key in c1]
-    
-    df = pd.DataFrame(data = {'ISSN': c1, 'Estrato': c2})
-    
-    df.set_index('ISSN', inplace=True)
+def atualizar_metadata(adicionados, quantidade):
+    dados = json.loads(ARQUIVO_METADATA.read_text(encoding="utf-8"))
+    artefato = dados["artefatos"]["qualis_unificado"]
+    artefato["sha256_csv"] = hashlib.sha256(ARQUIVO_QUALIS.read_bytes()).hexdigest()
+    artefato["quantidade_registros"] = quantidade
+    artefato["aliases_issn"] = {
+        "fontes": ["issn_list_xlsx.csv", "ImpactFactor2024.csv", "ISSNJson/*.json"],
+        "quantidade_adicionada": adicionados,
+    }
+    temporario = ARQUIVO_METADATA.with_suffix(".tmp")
+    temporario.write_text(json.dumps(dados, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(temporario, ARQUIVO_METADATA)
 
-    df.to_csv('qualis-unificado.csv', header = True, index = True)
+
+def main(argv=None):
+    resultado = atualizar_sucupira.main(argv)
+    if resultado:
+        return resultado
+    adicionados, quantidade = enriquecer_aliases()
+    atualizar_metadata(adicionados, quantidade)
+    print(f"Aliases de ISSN publicados: {adicionados}; total de periódicos: {quantidade}.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

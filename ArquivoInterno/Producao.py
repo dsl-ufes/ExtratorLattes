@@ -198,7 +198,7 @@ class TrabalhoEvento(Producao):
         _pais (str): País do evento (herdado de Producao)
     """
     
-    def __init__(self, ano: int, pais: str, natureza: NaturezaTrabalho, classificacao: ClassificacaoEvento, titulo: str, venue: str, autores: list):
+    def __init__(self, ano: int, pais: str, natureza: NaturezaTrabalho, classificacao: ClassificacaoEvento, titulo: str, venue: str, autores: list, metadados=None):
         """
         Inicializa um trabalho publicado em evento.
         
@@ -217,6 +217,7 @@ class TrabalhoEvento(Producao):
         self._titulo = titulo
         self._venue = venue
         self._autores = autores
+        self._metadados = metadados
     
     def get_natureza(self):
         """Retorna a natureza do trabalho."""
@@ -237,6 +238,9 @@ class TrabalhoEvento(Producao):
     def get_autores(self):
         """Retorna a lista de autores."""
         return self._autores
+
+    def get_metadados(self):
+        return self._metadados
     
     def __str__(self) -> str:
         return "Classe: TrabalhoEvento " + "Ano: " + str(self.get_ano()) + " País: " + self.get_pais() + " classificacao: " + str(self.get_classificacao()) + " natureza: " + str(self.get_natureza())
@@ -489,7 +493,7 @@ class Artigo(Producao):
         _pais (str): País de publicação (herdado de Producao)
     """
     
-    def __init__(self, ano: int, pais: str, issn: str, natureza: NaturezaArtigo, titulo: str, revista: str, autores: list):
+    def __init__(self, ano: int, pais: str, issn: str, natureza: NaturezaArtigo, titulo: str, revista: str, autores: list, metadados=None):
         """
         Inicializa um artigo publicado.
         
@@ -508,6 +512,7 @@ class Artigo(Producao):
         self._titulo = titulo
         self._revista = revista
         self._autores = autores
+        self._metadados = metadados
     
     def get_issn(self):
         """Retorna o ISSN do periódico."""
@@ -528,6 +533,9 @@ class Artigo(Producao):
     def get_autores(self):
         """Retorna a lista de autores."""
         return self._autores
+
+    def get_metadados(self):
+        return self._metadados
 
 class ProgramaRadioTV(Producao):
     """

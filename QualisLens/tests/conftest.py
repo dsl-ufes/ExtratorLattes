@@ -3,12 +3,12 @@
 import sys
 from pathlib import Path
 
-# Permite importar os módulos de qualislens/ sem instalar como pacote
-QUALISLENS_DIR = Path(__file__).parent.parent / "qualislens"
-sys.path.insert(0, str(QUALISLENS_DIR))
+# Permite testar o pacote e sua integração com o projeto sem instalá-lo.
+REPO_DIR = Path(__file__).parents[2]
+sys.path.insert(0, str(REPO_DIR))
 
 import pytest
-from qualis_db import QualisDB
+from QualisLens.qualislens.qualis_db import QualisDB
 
 BASE_DIR = Path(__file__).parent.parent
 

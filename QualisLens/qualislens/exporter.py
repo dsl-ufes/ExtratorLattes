@@ -13,17 +13,23 @@ from typing import Optional
 
 import pandas as pd
 
-from constants import STATUSES_REVISAO, STATUS_EXATO, STATUS_AUTO_FUZZY
+from .constants import STATUSES_REVISAO, STATUS_EXATO, STATUS_AUTO_FUZZY
 
 logger = logging.getLogger(__name__)
 
 # Colunas adicionadas ao CSV de saída (produzidas pelo pipeline)
 COLUNAS_OUTPUT = [
+    "qualis_input_id",
+    "qualis_evento_id",
+    "qualis_registro_id",
     "qualis_estrato",
     "qualis_status",
+    "qualis_requer_revisao",
+    "qualis_sigla",
     "qualis_nome_oficial",
     "qualis_quadrienio",
     "qualis_score_fuzzy",
+    "qualis_score_margem",
     "qualis_score_llm",
     "llm_m1_modelo",
     "llm_m1_confianca",
@@ -34,6 +40,11 @@ COLUNAS_OUTPUT = [
     "qualis_candidatos",
     "qualis_llm_motivo",
     "qualis_obs",
+    "qualis_origem_decisao",
+    "qualis_politica_versao",
+    "qualis_justificativa",
+    "qualis_decidido_por",
+    "qualis_decidido_em",
 ]
 
 
@@ -171,11 +182,14 @@ def exportar_csv(
     # Reordenar colunas: entrada → resultado → diagnóstico → detalhe LLM → obs
     _ordem_qualis = [
         "qualis_estrato",
+        "qualis_sigla",
         "qualis_nome_oficial",
         "qualis_quadrienio",
         "passou_fuzzy",
         "qualis_score_fuzzy",
+        "qualis_score_margem",
         "qualis_status",
+        "qualis_requer_revisao",
         "confiabilidade",
         "qualis_score_llm",
         "llm_m1_modelo",
@@ -232,8 +246,17 @@ def exportar_fila_revisao(
     )
 
     fila = df_resultado[
-        df_resultado["qualis_status"].isin(STATUSES_REVISAO)
+        df_resultado["qualis_requer_revisao"].astype(str).str.lower().eq("true")
+        | df_resultado["qualis_status"].isin(STATUSES_REVISAO + ["ERRO"])
     ].copy()
+
+    # A decision applies to one reported input, not to every occurrence.
+    if "qualis_input_id" in fila.columns and not fila.empty:
+        agg = {column: "first" for column in fila.columns if column != "qualis_input_id"}
+        for column in ("titulo_artigo", "Docente", "docente", "ocorrencia_id"):
+            if column in fila.columns:
+                agg[column] = lambda values: " | ".join(sorted({str(v) for v in values if str(v)}))
+        fila = fila.groupby("qualis_input_id", dropna=False, as_index=False).agg(agg)
 
     for col in COLUNAS_REVISAO:
         fila[col] = ""

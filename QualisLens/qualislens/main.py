@@ -16,20 +16,16 @@ Uso:
 import argparse
 import logging
 import sys
-import os
 from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 
-# Garantir que qualislens/ está no path quando executado diretamente
-sys.path.insert(0, os.path.dirname(__file__))
-
-from constants import STATUSES_REVISAO, THRESHOLD_LLM, THRESHOLD_AUTO
-from exporter import exportar_csv, resumo_por_status, COLUNAS_OUTPUT
-from llm_reviewer import revisar
-from matcher import match
-from qualis_db import get_db
+from .constants import STATUSES_REVISAO
+from .exporter import exportar_csv, exportar_fila_revisao, resumo_por_status, COLUNAS_OUTPUT
+from .llm_reviewer import revisar
+from .matcher import match, validar_resultado
+from .qualis_db import get_db
 
 logging.basicConfig(
     level=logging.INFO,
@@ -87,7 +83,7 @@ def _processar_linha(
     db:
         Instância QualisDB.
     modelos:
-        Lista de modelos Ollama a usar (None → padrão de constants.py).
+        Lista de modelos Ollama a usar. ``None`` desativa a LLM.
 
     Returns
     -------
@@ -109,7 +105,11 @@ def _processar_linha(
     if not resultado.get("_precisa_llm"):
         return {k: resultado.get(k) for k in COLUNAS_OUTPUT}
 
-    # Precisa de LLM
+    # Sem modelo explícito, preservar a decisão de revisão manual do matcher.
+    if not modelos:
+        return {k: resultado.get(k) for k in COLUNAS_OUTPUT}
+
+    # Precisa de LLM e o usuário optou por ela.
     candidatos = resultado.get("_candidatos_lista", [])
     score_fuzzy = resultado.get("qualis_score_fuzzy", 0.0)
     nome_original = resultado.get("_pre", {}).get("nome_original", nome)
@@ -121,10 +121,12 @@ def _processar_linha(
     saida = {k: resultado.get(k) for k in COLUNAS_OUTPUT}
     saida.update({
         "qualis_estrato": llm_resultado["qualis_estrato"],
+        "qualis_sigla": llm_resultado["qualis_sigla"],
         "qualis_nome_oficial": llm_resultado["qualis_nome_oficial"],
         "qualis_quadrienio": llm_resultado["qualis_quadrienio"],
         "qualis_score_llm": llm_resultado["qualis_score_llm"],
         "qualis_status": llm_resultado["qualis_status"],
+        "qualis_requer_revisao": llm_resultado["qualis_status"] in STATUSES_REVISAO,
         "qualis_llm_motivo": llm_resultado["qualis_llm_motivo"],
         "llm_m1_modelo": llm_resultado.get("llm_m1_modelo"),
         "llm_m1_confianca": llm_resultado.get("llm_m1_confianca"),
@@ -133,7 +135,16 @@ def _processar_linha(
         "llm_m2_confianca": llm_resultado.get("llm_m2_confianca"),
         "llm_m2_escolheu": llm_resultado.get("llm_m2_escolheu"),
     })
-    return saida
+    selecionado = next(
+        (candidato for candidato in candidatos
+         if candidato.get("sigla") == llm_resultado.get("qualis_sigla")
+         and candidato.get("nome") == llm_resultado.get("qualis_nome_oficial")),
+        None,
+    )
+    if selecionado:
+        saida["qualis_evento_id"] = selecionado.get("qualis_evento_id")
+        saida["qualis_registro_id"] = selecionado.get("qualis_registro_id")
+    return validar_resultado(saida)
 
 
 def executar(
@@ -151,7 +162,7 @@ def executar(
     caminho_saida:
         Caminho explícito para o CSV de saída (opcional).
     modelos:
-        Lista de modelos Ollama (None → padrão; 2 modelos → dupla verificação).
+        Lista de modelos Ollama (None → desativado; 2 modelos → dupla verificação).
 
     Returns
     -------
@@ -175,6 +186,7 @@ def executar(
             logger.error("Erro inesperado na linha %d: %s", i, exc, exc_info=True)
             r = {k: None for k in COLUNAS_OUTPUT}
             r["qualis_status"] = "ERRO"
+            r["qualis_requer_revisao"] = True
             r["qualis_llm_motivo"] = str(exc)
         resultados.append(r)
 
@@ -183,6 +195,7 @@ def executar(
         df_resultado[col] = [r[col] for r in resultados]
 
     path_csv = exportar_csv(df_resultado, caminho_entrada, caminho_saida)
+    path_revisao = exportar_fila_revisao(df_resultado, str(path_csv))
 
     resumo = resumo_por_status(df_resultado)
     logger.info("─" * 50)
@@ -191,6 +204,7 @@ def executar(
         logger.info("  %-20s %d", status, count)
     logger.info("─" * 50)
     logger.info("Saída CSV: %s", path_csv)
+    logger.info("Fila de revisão: %s", path_revisao)
 
     return path_csv
 

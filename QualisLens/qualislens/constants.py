@@ -4,8 +4,12 @@ Ajuste os thresholds empiricamente em uma amostra rotulada antes de rodar no dat
 """
 
 # ── Thresholds de confiança ────────────────────────────────────────────────────
-THRESHOLD_AUTO: int = 75   # score >= 75 → aceitar automaticamente (AUTO_FUZZY); até 74 vai para LLM
-THRESHOLD_LLM: int = 60    # 60 <= score < 75 → LLM decide; < 60 → LLM opina, humano decide
+THRESHOLD_AUTO: int = 88
+# Além do score mínimo, um match fuzzy só é automático quando o primeiro
+# candidato abre esta margem sobre o segundo. Empates e quase-empates vão para
+# revisão, mesmo que o score absoluto seja alto.
+THRESHOLD_AUTO_MARGIN: int = 8
+THRESHOLD_LLM: int = 60
 THRESHOLD_CANDIDATOS_RUINS: int = 68
 # score do melhor candidato abaixo deste valor → candidatos são provavelmente ruído
 # do token_sort_ratio, não há sentido chamar o LLM; vai direto para LLM_MISS/revisão
@@ -38,9 +42,11 @@ STATUS_MANUAL_OK: str = "MANUAL_OK"
 STATUS_MANUAL_MISS: str = "MANUAL_MISS"
 STATUS_LLM_DUPLO_OK: str = "LLM_DUPLO_OK"         # ambos modelos concordam → aceito
 STATUS_LLM_DUPLO_DIVERGE: str = "LLM_DUPLO_DIVERGE"  # modelos divergem → revisão humana
+STATUS_REVISAO_MANUAL: str = "REVISAO_MANUAL"
 
 # Statuses que requerem revisão humana
 STATUSES_REVISAO: list[str] = [
+    STATUS_REVISAO_MANUAL,
     STATUS_LLM_MISS,
     STATUS_LLM_LOW_OK,
     STATUS_LLM_LOW_MISS,
@@ -49,3 +55,7 @@ STATUSES_REVISAO: list[str] = [
 
 # ── Número de candidatos retornados pelo fuzzy ────────────────────────────────
 TOP_N_CANDIDATOS: int = 5
+
+# Identifica as regras que geraram ``qualis_input_id``.  Altere quando uma
+# mudança de política puder alterar uma decisão humana já registrada.
+POLITICA_VERSAO: str = "2"

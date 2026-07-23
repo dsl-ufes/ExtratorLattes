@@ -10,7 +10,8 @@
     "arquivo_nota_geral": "grupo.csv",
     "arquivo_qualis_journal": "../Classificador/qualis-unificado.csv",
     "arquivo_qualis_conference": "../Classificador/qualis_conferencias.csv",
-    "arquivo_recredenciamento_corrigido": "DadosPPGI/saida/2024_recredenciamento.csv",
-    "arquivo_recredenciamento_saida": "recredenciamento.csv",
+    "arquivo_publicacoes_ocorrencias": "DadosPPGI/saida/2024_publicacoes_ocorrencias.csv",
+    "arquivo_overrides_deduplicacao": "DadosPPGI/input/publicacoes_deduplicacao_overrides.csv",
+    "arquivo_overrides_qualis": "DadosPPGI/input/qualis_overrides.csv",
     "config_pontuacao": "DadosPPGI/config-pontuacao.json"
 }

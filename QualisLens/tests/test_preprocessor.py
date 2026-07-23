@@ -1,8 +1,10 @@
 """Testes unitários para o módulo de pré-processamento (preprocessor.py)."""
 
 import pytest
-from preprocessor import (
+from QualisLens.qualislens.preprocessor import (
     extrair_acronimo,
+    extrair_siglas_candidatas,
+    extrair_siglas_fortes,
     normalizar,
     preprocessar_linha,
     separar_sigla_nome,
@@ -20,9 +22,12 @@ class TestNormalizar:
         assert normalizar("SBRC") == "sbrc"
 
     def test_remove_acentos(self):
-        assert normalizar("Simpósio") == "simposio"
         assert normalizar("Ciência") == "ciencia"
         assert normalizar("Inteligência") == "inteligencia"
+
+    def test_traduz_tipo_de_evento(self):
+        assert normalizar("Simpósio") == "symposium"
+        assert normalizar("Simpósio") == normalizar("Symposium")
 
     def test_remove_stopword_on(self):
         result = normalizar("International Conference on Software Engineering")
@@ -61,7 +66,7 @@ class TestNormalizar:
 
     def test_nome_com_acentos_portugues(self):
         result = normalizar("Simpósio Brasileiro de Redes")
-        assert result == "simposio brasileiro de redes"
+        assert result == "symposium brasileiro de redes"
 
     def test_separadores_viram_espaco(self):
         result = normalizar("IEEE/ACM International Conference")
@@ -114,9 +119,9 @@ class TestSepararSiglaNome:
         sigla, nome = separar_sigla_nome("ABCDEFGH - Anything")
         assert sigla == "ABCDEFGH"
 
-    def test_sigla_nove_chars_nao_captura(self):
+    def test_sigla_nove_chars_captura(self):
         sigla, nome = separar_sigla_nome("ABCDEFGHI - Anything")
-        assert sigla is None
+        assert sigla == "ABCDEFGHI"
 
     def test_sigla_com_digitos(self):
         sigla, nome = separar_sigla_nome("IEEE3 - Conference")
@@ -207,7 +212,7 @@ class TestPreprocessarLinha:
 
     def test_nome_norm_sem_acentos(self):
         result = preprocessar_linha("Simpósio Brasileiro de Redes")
-        assert "simposio" in result["nome_norm"]
+        assert "symposium" in result["nome_norm"]
         assert "ó" not in result["nome_norm"]
 
     def test_sigla_norm_lowercase(self):

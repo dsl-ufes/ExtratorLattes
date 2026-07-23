@@ -6,13 +6,12 @@ Uso: python test/generate_outputs.py   (a partir da pasta QualisLens/)
 """
 
 import sys
-import os
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(ROOT / "qualislens"))
+sys.path.insert(0, str(ROOT.parent))
 
-from main import executar
+from QualisLens.qualislens.main import executar
 
 LEVELS = ["easy", "mid", "hard"]
 SUBFOLDERS = [f"{i:02d}" for i in range(1, 11)]

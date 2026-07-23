@@ -1,0 +1,9 @@
+id,venue,sigla,ano,decisao,sigla_esperada,esperado
+icse,International Conference on Software Engineering,ICSE,2023,exato,ICSE,A1
+sbrc,SBRC - Simpósio Brasileiro de Redes de Computadores e Sistemas Distribuídos,SBRC,2022,exato,SBRC,A4
+coling,Int'l Conf. on Computational Linguistics,,2020,topo_ou_revisao,COLING,A1
+icde,IEEE Int'l Conf. on Data Engineering,,2020,topo_ou_revisao,ICDE,A1
+workshop,Wksp. on Emb. Syst. Sec. & Verif.,,2020,manual,,
+generico,International Conference,,2022,manual,,
+inexistente,zzz xqqq fyyyy 123456789,,2022,manual,,
+codificacao,IEEE International Conference on Data Engineering &#38; Applications,,2020,topo_ou_revisao,ICDE,A1

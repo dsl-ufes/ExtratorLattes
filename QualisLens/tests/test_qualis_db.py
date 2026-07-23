@@ -1,8 +1,8 @@
 """Testes unitários para QualisDB (qualis_db.py)."""
 
 import pytest
-from qualis_db import QualisDB, _resolver_quadrienio
-from constants import QUADRIENIO_ANTIGO, QUADRIENIO_RECENTE
+from QualisLens.qualislens.qualis_db import QualisDB, _carregar_csv, _resolver_quadrienio
+from QualisLens.qualislens.constants import QUADRIENIO_ANTIGO, QUADRIENIO_RECENTE
 
 
 class TestResolverQuadrienio:
@@ -74,6 +74,8 @@ class TestQualisDBCarga:
         assert "sigla_norm" in db.df.columns
         assert "nome_norm" in db.df.columns
         assert "acronimo" in db.df.columns
+        assert "qualis_evento_id" in db.df.columns
+        assert "qualis_registro_id" in db.df.columns
 
     def test_dois_quadrienios_presentes(self, db):
         quadrienios = set(db.df["quadrienio"].unique())
@@ -87,6 +89,22 @@ class TestQualisDBCarga:
 
     def test_volume_minimo_de_registros(self, db):
         assert len(db.df) > 100
+
+    def test_carrega_tsv_legado_com_virgula_no_nome(self, tmp_path):
+        arquivo = tmp_path / "qualis-legado.tsv"
+        arquivo.write_text(
+            "SIGLA\tEvento, com vírgula\tA1\n",
+            encoding="utf-8",
+        )
+
+        resultado = _carregar_csv(arquivo, QUADRIENIO_ANTIGO)
+
+        assert resultado.iloc[0].to_dict() == {
+            "sigla": "SIGLA",
+            "nome": "Evento, com vírgula",
+            "estrato": "A1",
+            "quadrienio": QUADRIENIO_ANTIGO,
+        }
 
 
 class TestQualisDBBuscar:
@@ -129,8 +147,13 @@ class TestQualisDBBuscar:
     def test_retorno_contem_campos_obrigatorios(self, db):
         result = db.buscar("SBRC", 2022, por_sigla=True)
         assert result is not None
-        for campo in ["sigla", "nome", "estrato", "quadrienio", "extrapolado", "campo_match"]:
+        for campo in ["sigla", "nome", "estrato", "quadrienio", "extrapolado", "campo_match", "qualis_evento_id", "qualis_registro_id"]:
             assert campo in result
+
+    def test_lookup_por_ids_estaveis(self, db):
+        result = db.buscar("SBRC", 2022, por_sigla=True)
+        record = db.get_by_record_id(result["qualis_registro_id"])
+        assert record["qualis_evento_id"] == result["qualis_evento_id"]
 
     def test_campo_match_sigla(self, db):
         result = db.buscar("SBRC", 2022, por_sigla=True)

@@ -1,0 +1,40 @@
+{
+  "area": "COMPUTAÇÃO",
+  "artefatos": {
+    "qualis_unificado": {
+      "arquivo": "Classificador/qualis-unificado.csv",
+      "quantidade_registros": 2785,
+      "sha256_csv": "d6fca8553fb04a316c5a413f29baddb096f40bd11ed7603980a6e6ed1207a114"
+    }
+  },
+  "fontes": {
+    "eventos": {
+      "arquivo_csv": "QualisLens/base/qualis_2021_2024.csv",
+      "arquivo_original": "QualisLens/base/originais/sucupira_eventos_computacao_2021_2024.xlsx",
+      "contagem_antes_normalizacao": 781,
+      "contagem_depois_normalizacao": 781,
+      "nome_original": "Computação_Classificação de Eventos 2025.xlsx",
+      "opcao_selecionada": "Classificação de trabalho em anais 2025",
+      "quantidade_registros": 781,
+      "sha256_csv": "a8a293651f3c91b617d094615884d070e991939347e8023588085d94e5aabe06",
+      "sha256_xlsx": "b7aa1dc8e8c4c1b03d72486be15d8db19e2f42367aef8080959deddfe829f5a9",
+      "url": "https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/qualisEventos/listaQualisEventos.xhtml"
+    },
+    "periodicos": {
+      "arquivo_csv": "Classificador/base/qualis_periodicos_2021_2024.csv",
+      "arquivo_original": "QualisLens/base/originais/sucupira_periodicos_computacao_2021_2024.xlsx",
+      "contagem_antes_normalizacao": 2785,
+      "contagem_depois_normalizacao": 2785,
+      "nome_original": "classificacoes_publicadas_computacao_2026_1783453531633.xlsx",
+      "opcao_selecionada": "CLASSIFICAÇÕES DE PERIÓDICOS QUADRIÊNIO 2021-2024",
+      "quantidade_registros": 2785,
+      "sha256_csv": "084a09fab96c37b57bfa4e624eff150a7227c69e94a40a9c33ff75b3985bc362",
+      "sha256_xlsx": "45553af9e411e6f218ace4ea6d410fd5bd9b40103e0b18eecedd6ddfc6f353fb",
+      "url": "https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/veiculoPublicacaoQualis/listaConsultaGeralPeriodicos.xhtml"
+    }
+  },
+  "gerado_em_utc": "2026-07-23T12:50:14Z",
+  "modo": "online",
+  "politica_importacao_versao": "1",
+  "quadrienio": "2021-2024"
+}

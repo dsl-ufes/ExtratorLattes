@@ -33,6 +33,13 @@ def samePapers(a, b):
     return False
 
 def deduplicate_papers(papers):
+    # A etapa de ocorrências fornece uma identidade canônica. Ela substitui a
+    # comparação histórica por título para o agregado PPGI.
+    if papers and all(hasattr(paper, '_publicacao_canonica_id') for paper in papers):
+        unicos = {}
+        for paper in papers:
+            unicos.setdefault(paper._publicacao_canonica_id, paper)
+        return [unicos[chave] for chave in sorted(unicos)]
     # prepare
     d = {}
     graph = nx.Graph()

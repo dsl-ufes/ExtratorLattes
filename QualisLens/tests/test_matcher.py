@@ -1,11 +1,11 @@
 """Testes unitários para o algoritmo de matching fuzzy (matcher.py)."""
 
 import pytest
-from matcher import _score_hibrido, _token_level_fuzzy, match
-from constants import (
+from QualisLens.qualislens.matcher import _score_hibrido, _token_level_fuzzy, match
+from QualisLens.qualislens.constants import (
     STATUS_AUTO_FUZZY,
     STATUS_EXATO,
-    STATUS_LLM_MISS,
+    STATUS_REVISAO_MANUAL,
     THRESHOLD_AUTO,
     THRESHOLD_CANDIDATOS_RUINS,
 )
@@ -133,6 +133,19 @@ class TestMatch:
         assert result["qualis_status"] == STATUS_EXATO
         assert result["qualis_estrato"] == "A1"
 
+    def test_acronimo_isolado_conhecido_resolve(self, db):
+        result = match("ICSE 2023", 2023, None, db)
+        assert result["qualis_status"] == STATUS_EXATO
+        assert result["qualis_sigla"] == "ICSE"
+
+    def test_workshop_nao_casa_com_data_por_sigla_extraida(self, db):
+        result = match("Data-Driven Workshop on X", 2023, None, db)
+        assert not (result["qualis_status"] == STATUS_EXATO and result["qualis_sigla"] == "DATA")
+
+    def test_parentetico_topico_nao_substitui_nome_por_ai_canadense(self, db):
+        result = match("International Conference on Artificial Intelligence (AI) Applications", 2023, None, db)
+        assert not (result["qualis_status"] == STATUS_EXATO and result["qualis_sigla"] == "AI")
+
     def test_exato_por_sigla_aaai(self, db):
         result = match("AAAI Conference on Artificial Intelligence", 2022, "AAAI", db)
         assert result["qualis_status"] == STATUS_EXATO
@@ -178,16 +191,16 @@ class TestMatch:
         result = match("Int'l Symp. on Cluster, Cloud and Grid Computing", 2021, None, db)
         assert not result.get("_precisa_llm", False)
 
-    # ── Casos LLM_MISS (score muito baixo, sem LLM) ──────────────────────────
+    # ── Casos sem decisão automática ─────────────────────────────────────────
 
-    def test_llm_miss_nome_totalmente_diferente(self, db):
+    def test_revisao_nome_totalmente_diferente(self, db):
         # Nome sem nenhuma relação com qualquer conferência conhecida
         result = match("zzz xqqq fyyyy 123456789", 2022, None, db)
-        assert result["qualis_status"] == STATUS_LLM_MISS
+        assert result["qualis_status"] == STATUS_REVISAO_MANUAL
         assert result["qualis_estrato"] is None
         assert result["qualis_score_fuzzy"] < THRESHOLD_CANDIDATOS_RUINS
 
-    def test_llm_miss_sem_llm_necessario(self, db):
+    def test_revisao_sem_llm_necessario(self, db):
         # Score muito baixo → não precisa de LLM (candidatos são ruído)
         result = match("zzz xqqq fyyyy 123456789", 2022, None, db)
         assert result.get("_precisa_llm") is False
@@ -199,12 +212,12 @@ class TestMatch:
         # Este teste verifica o campo _precisa_llm quando aplicável
         result = match("Wksp Embedded Systems Security", 2020, None, db)
         if result.get("_precisa_llm"):
-            assert result["qualis_status"] is None
+            assert result["qualis_status"] == STATUS_REVISAO_MANUAL
             s = result["qualis_score_fuzzy"]
             assert THRESHOLD_CANDIDATOS_RUINS <= s < THRESHOLD_AUTO
         else:
-            # Pode ter resolvido em AUTO_FUZZY ou LLM_MISS — também válido
-            assert result["qualis_status"] in (STATUS_AUTO_FUZZY, STATUS_LLM_MISS)
+            # Pode ter resolvido em AUTO_FUZZY ou exigido revisão — também válido
+            assert result["qualis_status"] in (STATUS_AUTO_FUZZY, STATUS_REVISAO_MANUAL)
 
     # ── Campos obrigatórios no retorno ───────────────────────────────────────
 
@@ -231,8 +244,6 @@ class TestMatch:
     def test_obs_extrapolado_quando_fora_do_periodo(self, db):
         # VLDB está na base 2017-2020; buscar em 2023 deve extrapolá-la
         result = match("VLDB - Very Large Data Bases", 2023, "VLDB", db)
-        if result["qualis_status"] == STATUS_EXATO:
-            # Se encontrou, pode ter sido extrapolada
-            obs = result.get("qualis_obs") or ""
-            # A busca cross-quadriênio gera obs "extrapolado"
-            assert "extrapolado" in obs or result["qualis_quadrienio"] is not None
+        if result["qualis_quadrienio"] == "2017-2020":
+            assert result["qualis_status"] == STATUS_REVISAO_MANUAL
+            assert result["qualis_requer_revisao"] is True

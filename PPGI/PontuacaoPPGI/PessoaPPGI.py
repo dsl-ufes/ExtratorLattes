@@ -30,7 +30,12 @@ class PessoaPPGI():
             if isinstance(prod, Journal):
                 prod.set_estrato(qualis_journal.get_estrato(prod.get_issn()))
             elif isinstance(prod, Conference):
-                prod.set_estrato(qualis_conference.get_estrato(prod.get_venue()))
+                resultado = qualis_conference.get_match(
+                    prod.get_venue(),
+                    prod.get_ano(),
+                )
+                prod.set_qualis_match(resultado)
+                prod.set_estrato(resultado["qualis_estrato"])
 
     def insere_producao(self, producao: Producao):
         self._producoes.append(producao)
