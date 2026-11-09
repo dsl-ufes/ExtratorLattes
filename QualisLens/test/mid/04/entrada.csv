@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Joins aproximados em bancos de dados distribuídos,ACM Conf. on Management of Data,SIGMOD,2019,10.1000/sigmod2019.m04
+Execução de consultas em memória flash,Int'l Conf. on Very Large Data Bases,,2018,10.1000/vldb2018.m04
+Particionamento de grafos para processamento paralelo,IEEE Int'l Conf. on Data Engineering,,2022,10.1000/icde2022.m04
+Busca facetada em repositórios digitais,ACM Int'l Conf. on Information and Knowledge Management,,2022,10.1000/cikm2022.m04
+Descoberta de padrões temporais em dados clínicos,Pacific-Asia Conf. on Knowledge Discovery and Data Mining,,2022,10.1000/pakdd2022.m04

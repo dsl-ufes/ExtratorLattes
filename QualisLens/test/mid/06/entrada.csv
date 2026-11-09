@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Gerenciamento de memória em sistemas de tempo real,ACM Symp. on Operating Systems Principles,SOSP,2019,10.1000/sosp2019.m06
+Isolamento de contêineres com hardware TEE,USENIX Symp. on Operating Systems Design and Implementation,,2020,10.1000/osdi2020.m06
+Deduplicação eficiente em sistemas de backup,USENIX Conf. on File and Storage Technologies,,2022,10.1000/fast2022.m06
+Escalonamento de carga em sistemas de borda,European Conf. on Computer Systems,,2023,10.1000/eurosys2023.m06
+Depuração de sistemas distribuídos em produção,USENIX Annual Technical Conf.,,2022,10.1000/atc2022.m06

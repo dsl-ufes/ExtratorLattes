@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Otimização de consultas em bancos NoSQL,ACM Conference on Management of Data,SIGMOD,2019,10.1000/sigmod2019.001
+Processamento de dados em tempo real,International Conference on Very Large Data Bases,VLDB,2018,10.1000/vldb2018.002
+Indexação eficiente de dados de séries temporais,IEEE International Conference on Data Engineering,ICDE,2022,10.1000/icde2022.003
+Busca semântica em coleções heterogêneas,International ACM SIGIR Conference on Research and Development in Information Retrieval,SIGIR,2023,10.1000/sigir2023.004
+Recomendação de conteúdo em redes sociais,ACM International Conference on Information and Knowledge Management,CIKM,2022,10.1000/cikm2022.005

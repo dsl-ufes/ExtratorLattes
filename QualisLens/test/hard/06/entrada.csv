@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Aceleração de sistemas de arquivos com NVM,USENIX Conf. File Storage Tech.,,2022,10.1000/fast2022.h06
+Migração ao vivo de máquinas virtuais,Eur. Conf. Comp. Syst.,,2023,10.1000/eurosys2023.h06
+Desempenho de E/S em clusters de alta disponibilidade,USENIX Ann. Tech. Conf.,,2022,10.1000/atc2022.h06
+Alocação de recursos em fog computing,ACM Symp. Op. Syst. Princ.,,2019,10.1000/sosp2019.h06
+Isolamento de processos em kernels monolíticos,USENIX Symp. Op. Syst. Des. Impl.,,2020,10.1000/osdi2020.h06

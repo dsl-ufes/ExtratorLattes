@@ -1,9 +1,48 @@
 import xml.etree.ElementTree as ET
 import ArquivoInterno.Producao as prod
+from pathlib import Path
+from ArquivoInterno.Publicacao import AutorPublicacao, MetadadosPublicacao, ProvenienciaPublicacao
 
 class CurriculoXML():
     def __init__(self, caminho_xml: str):
         self._root = ET.parse(caminho_xml)
+        self._caminho_xml = str(caminho_xml)
+        dados = self._root.find("DADOS-GERAIS")
+        # The Lattes identifier belongs to CURRICULO-VITAE.  A filename is not
+        # provenance and must never become an identity.
+        self._curriculo_id = self._root.getroot().attrib.get("NUMERO-IDENTIFICADOR", "") or (dados.attrib.get("NUMERO-IDENTIFICADOR", "") if dados is not None else "")
+        if not self._curriculo_id:
+            raise ValueError("CURRICULO-VITAE sem NUMERO-IDENTIFICADOR")
+
+    @staticmethod
+    def _atributo(elemento, nome):
+        return elemento.attrib.get(nome, "") if elemento is not None else ""
+
+    def _autores(self, item):
+        autores = []
+        for ordem, autor in enumerate(item.iter("AUTORES"), 1):
+            autores.append(AutorPublicacao(
+                nome=self._atributo(autor, "NOME-COMPLETO-DO-AUTOR"),
+                nome_citacao=self._atributo(autor, "NOME-PARA-CITACAO"),
+                ordem=ordem,
+                id_lattes=self._atributo(autor, "NRO-ID-CNPQ") or self._atributo(autor, "NUMERO-IDENTIFICADOR"),
+                id_cnpq=self._atributo(autor, "ID-CNPQ"),
+            ))
+        return autores
+
+    def _metadados(self, item, detalhe, maisdetalhe, sequencia, elemento):
+        autores = tuple(self._autores(item))
+        return MetadadosPublicacao(
+            doi=self._atributo(maisdetalhe, "DOI") or self._atributo(detalhe, "DOI"),
+            issn=self._atributo(maisdetalhe, "ISSN"),
+            isbn=self._atributo(maisdetalhe, "ISBN"),
+            volume=self._atributo(maisdetalhe, "VOLUME"),
+            fasciculo=self._atributo(maisdetalhe, "FASCICULO"),
+            pagina_inicial=self._atributo(maisdetalhe, "PAGINA-INICIAL"),
+            pagina_final=self._atributo(maisdetalhe, "PAGINA-FINAL"),
+            autores_detalhados=autores,
+            proveniencia=ProvenienciaPublicacao(self._curriculo_id, self._caminho_xml, sequencia, elemento, not bool(sequencia)),
+        )
 
     def get_nome(self):
         dadosgerais  = self._root.find("DADOS-GERAIS")
@@ -62,24 +101,20 @@ class CurriculoXML():
         all_artigos = []
 
         for item in self._root.iter("ARTIGO-PUBLICADO"):
-            autores = []
-
-            for autor in item.iter("AUTORES"):
-                autores.append(autor.attrib['NOME-PARA-CITACAO'])
-
-            for detalhe in item.iter("DADOS-BASICOS-DO-ARTIGO"):
-                ano  = _parse_ano(detalhe.attrib['ANO-DO-ARTIGO'])
-                natureza = detalhe.attrib['NATUREZA']
-                pais = detalhe.attrib['PAIS-DE-PUBLICACAO']
-                titulo = detalhe.attrib['TITULO-DO-ARTIGO']
-
-                for maisdetalhe in item.iter("DETALHAMENTO-DO-ARTIGO"):
-                    issn = maisdetalhe.attrib['ISSN']
-                    revista = maisdetalhe.attrib['TITULO-DO-PERIODICO-OU-REVISTA']
-                    if not pais:
-                        pais = maisdetalhe.attrib['LOCAL-DE-PUBLICACAO']
-                if ano >= ano_inicio and ano <= ano_fim:
-                    all_artigos.append(prod.Artigo(ano, pais, issn, prod.NaturezaArtigo.by_tag(natureza), titulo, revista, autores))
+            detalhe = next(iter(item.iter("DADOS-BASICOS-DO-ARTIGO")), None)
+            maisdetalhe = next(iter(item.iter("DETALHAMENTO-DO-ARTIGO")), None)
+            if detalhe is None:
+                continue
+            ano = _parse_ano(self._atributo(detalhe, 'ANO-DO-ARTIGO'))
+            natureza = self._atributo(detalhe, 'NATUREZA')
+            pais = self._atributo(detalhe, 'PAIS-DE-PUBLICACAO') or self._atributo(maisdetalhe, 'LOCAL-DE-PUBLICACAO')
+            titulo = self._atributo(detalhe, 'TITULO-DO-ARTIGO')
+            issn = self._atributo(maisdetalhe, 'ISSN')
+            revista = self._atributo(maisdetalhe, 'TITULO-DO-PERIODICO-OU-REVISTA')
+            if ano >= ano_inicio and ano <= ano_fim:
+                metadados = self._metadados(item, detalhe, maisdetalhe, self._atributo(item, "SEQUENCIA-PRODUCAO"), "ARTIGO-PUBLICADO")
+                autores = [a.nome_citacao or a.nome for a in metadados.autores_detalhados]
+                all_artigos.append(prod.Artigo(ano, pais, issn, prod.NaturezaArtigo.by_tag(natureza), titulo, revista, autores, metadados))
 
         return all_artigos
 
@@ -123,24 +158,20 @@ class CurriculoXML():
         all_trabalhos = []
 
         for item in self._root.iter("TRABALHO-EM-EVENTOS"):
-            autores = []
-
-            for autor in item.iter("AUTORES"):
-                autores.append(autor.attrib['NOME-PARA-CITACAO'])
-            
-            for detalhe in item.iter("DADOS-BASICOS-DO-TRABALHO"):
-                ano  = _parse_ano(detalhe.attrib['ANO-DO-TRABALHO'])
-                pais = detalhe.attrib['PAIS-DO-EVENTO']
-                natureza = detalhe.attrib['NATUREZA']
-                titulo = detalhe.attrib['TITULO-DO-TRABALHO']
-
-            for maisdetalhe in item.iter("DETALHAMENTO-DO-TRABALHO"):
-                classificacao="NACIONAL"
-                venue = maisdetalhe.attrib['NOME-DO-EVENTO'].strip()
-                if "CLASSIFICACAO-DO-EVENTO" in maisdetalhe.attrib:
-                    classificacao = maisdetalhe.attrib["CLASSIFICACAO-DO-EVENTO"]
-                if ano >= ano_inicio and ano <= ano_fim:
-                    all_trabalhos.append(prod.TrabalhoEvento(ano, pais, prod.NaturezaTrabalho.by_tag(natureza), prod.ClassificacaoEvento.by_tag(classificacao), titulo, venue, autores))
+            detalhe = next(iter(item.iter("DADOS-BASICOS-DO-TRABALHO")), None)
+            maisdetalhe = next(iter(item.iter("DETALHAMENTO-DO-TRABALHO")), None)
+            if detalhe is None:
+                continue
+            ano = _parse_ano(self._atributo(detalhe, 'ANO-DO-TRABALHO'))
+            pais = self._atributo(detalhe, 'PAIS-DO-EVENTO')
+            natureza = self._atributo(detalhe, 'NATUREZA')
+            titulo = self._atributo(detalhe, 'TITULO-DO-TRABALHO')
+            classificacao = self._atributo(maisdetalhe, "CLASSIFICACAO-DO-EVENTO") or "NACIONAL"
+            venue = self._atributo(maisdetalhe, 'NOME-DO-EVENTO').strip()
+            if ano >= ano_inicio and ano <= ano_fim:
+                metadados = self._metadados(item, detalhe, maisdetalhe, self._atributo(item, "SEQUENCIA-PRODUCAO"), "TRABALHO-EM-EVENTOS")
+                autores = [a.nome_citacao or a.nome for a in metadados.autores_detalhados]
+                all_trabalhos.append(prod.TrabalhoEvento(ano, pais, prod.NaturezaTrabalho.by_tag(natureza), prod.ClassificacaoEvento.by_tag(classificacao), titulo, venue, autores, metadados))
             
         return all_trabalhos
     

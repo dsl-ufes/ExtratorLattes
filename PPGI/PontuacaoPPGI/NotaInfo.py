@@ -44,6 +44,9 @@ class NotaInfo():
     def get_nota_min_value(self):
         return self.nota_min
 
+    def get_nota_intervalo(self):
+        return (self.nota_ano_inicio, self.nota_ano_fim)
+
     def alcancou_prod_min(self, qtd):
         return qtd >= self.prod_min_qtd
 

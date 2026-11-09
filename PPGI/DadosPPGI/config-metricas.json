@@ -1,0 +1,23 @@
+{
+  "arquivo_publicacoes_unicas": "DadosPPGI/saida/2024_publicacoes_unicas.csv",
+  "arquivo_publicacoes_ocorrencias": "DadosPPGI/saida/2024_publicacoes_ocorrencias.csv",
+  "arquivo_deduplicacao_revisao": "DadosPPGI/saida/2024_deduplicacao_revisao.csv",
+  "arquivo_overrides_deduplicacao": "DadosPPGI/input/publicacoes_deduplicacao_overrides.csv",
+  "diretorio_saida": "DadosPPGI/saida",
+  "arquivo_cache": "DadosPPGI/saida/metricas.sqlite",
+  "provedor_ranking": "google_scholar",
+  "google_scholar": {
+    "enabled": true,
+    "arquivo_perfis": "",
+    "intervalo_minimo_segundos": 2.5,
+    "jitter_segundos": 1.0
+  },
+  "scopus": {
+    "enabled": true,
+    "api_key_env": "SCOPUS_API_KEY",
+    "insttoken_env": "SCOPUS_INSTTOKEN",
+    "incluir_citacoes": true,
+    "incluir_metricas_veiculo": true
+  },
+  "perfil_distribuicao": "INTERNO"
+}

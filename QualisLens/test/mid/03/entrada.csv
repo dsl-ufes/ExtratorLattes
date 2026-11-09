@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Análise estática de contratos inteligentes,IEEE/ACM Int'l Conf. on Automated Software Engineering,ASE,2022,10.1000/ase2022.m03
+Priorização de casos de teste em CI/CD,Int'l Symp. on Software Testing and Analysis,,2021,10.1000/issta2021.m03
+Detecção de padrões de commit problemáticos,Working Conf. on Mining Software Repositories,,2023,10.1000/msr2023.m03
+Análise de impacto de mudanças em microsserviços,IEEE Int'l Conf. on Software Maintenance and Evolution,,2022,10.1000/icsme2022.m03
+Medição de cobertura de código em sistemas legados,Int'l Conf. on Evaluation and Assessment in Software Eng.,,2022,10.1000/ease2022.m03

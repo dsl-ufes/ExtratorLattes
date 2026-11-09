@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Verificação formal de sistemas operacionais,ACM Symposium on Operating Systems Principles,SOSP,2019,10.1000/sosp2019.001
+Isolamento de máquinas virtuais em nuvem,USENIX Symposium on Operating Systems Design and Implementation,OSDI,2020,10.1000/osdi2020.002
+Sistemas de arquivos distribuídos tolerantes a falhas,USENIX Conference on File and Storage Technologies,FAST,2022,10.1000/fast2022.003
+Escalonamento de threads em multiprocessadores heterogêneos,European Conference on Computer Systems,EUROSYS,2023,10.1000/eurosys2023.004
+Gerência de energia em datacenters,USENIX Annual Technical Conference,ATC,2022,10.1000/atc2022.005

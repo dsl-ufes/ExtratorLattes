@@ -1,0 +1,17 @@
+{
+    "ano_inicio_conferencia": 2023,
+    "ano_fim_conferencia": 2024,
+    "ano_inicio_periodico": 2021,
+    "ano_fim_periodico": 2024,
+    "arquivo_lista_docentes": "DadosPPGI/input/di-2024/di-2024.list",
+    "diretorio_curriculos": "DadosPPGI/curriculos-di-2024/",
+    "diretorio_saida": "DadosPPGI/saida-di-2024",
+    "arquivo_nota_docente": "docente.csv",
+    "arquivo_nota_geral": "grupo.csv",
+    "arquivo_qualis_journal": "../Classificador/qualis-unificado.csv",
+    "arquivo_qualis_conference": "../Classificador/qualis_conferencias.csv",
+    "arquivo_publicacoes_ocorrencias": "DadosPPGI/saida-di-2024/2024_publicacoes_ocorrencias.csv",
+    "arquivo_overrides_deduplicacao": "DadosPPGI/input/di-2024/deduplicacao_overrides.csv",
+    "arquivo_overrides_qualis": "DadosPPGI/input/di-2024/qualis_overrides.csv",
+    "config_pontuacao": "DadosPPGI/config-pontuacao.json"
+}

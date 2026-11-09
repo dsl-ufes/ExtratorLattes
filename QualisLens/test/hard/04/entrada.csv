@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Otimização de planos de execução paralela,ACM Conf. Manag. Data,,2019,10.1000/sigmod2019.h04
+Armazenamento colunar para análise OLAP,Int'l Conf. Very Large DB,,2018,10.1000/vldb2018.h04
+Execução de consultas sobre dados grafos,IEEE Int'l Conf. Data Eng.,,2022,10.1000/icde2022.h04
+Recomendação de produtos por filtro colaborativo,ACM Int'l Conf. Inf. Know. Manag.,,2022,10.1000/cikm2022.h04
+Classificação hierárquica de documentos,Int'l ACM SIGIR Conf. Res. Dev. Inf. Ret.,,2023,10.1000/sigir2023.h04

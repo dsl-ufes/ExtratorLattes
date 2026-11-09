@@ -1,0 +1,6 @@
+titulo_artigo,nome_conferencia,sigla_conferencia,ano_publicacao,doi
+Segmentação semântica com transformers,IEEE Conf. on Computer Vision and Pattern Recognition,CVPR,2022,10.1000/cvpr2022.m01
+Treinamento eficiente de modelos fundacionais,Int'l Conf. on Learning Representations,,2022,10.1000/iclr2022.m01
+Compressão de modelos neurais por destilação,Conf. on Machine Learning,,2022,10.1000/icml2022.m01
+Raciocínio causal em agentes autônomos,Int'l Joint Conf. on Artificial Intelligence,IJCAI,2023,10.1000/ijcai2023.m01
+Mineração de regras de associação em grafos,ACM SIGKDD Conf. on Knowledge Discovery and Data Mining,,2023,10.1000/kdd2023.m01

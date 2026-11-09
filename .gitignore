@@ -1,1 +1,15 @@
 __pycache__
+.venv
+.pytest_cache
+
+# Estado local e arquivos temporários de execução.
+PPGI/DadosPPGI/saida/*.sqlite
+PPGI/DadosPPGI/saida/*.sqlite-shm
+PPGI/DadosPPGI/saida/*.sqlite-wal
+PPGI/DadosPPGI/saida/.part1-*
+PPGI/DadosPPGI/saida/.part2-*
+.qualis-sucupira-*
+
+# Currículos Lattes (dados pessoais) e saídas de execução.
+PPGI/DadosPPGI/curriculos-*/
+PPGI/DadosPPGI/saida-*/
