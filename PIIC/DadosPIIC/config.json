@@ -6,5 +6,5 @@
     "arquivo_maes_pesquisadoras": "DadosPIIC/maes-pesquisadoras.csv",
     "diretorio_dos_curriculos": "DadosPIIC/Curriculos",
     "tabela_de_configuracao": "DadosPIIC/tabela_edital_PIIC_2025.json",
-    "arquivo_qualis": "../Classificador/qualis-unificado.csv"
+    "arquivo_qualis": "../Classificador/qualis-todas-areas-2017-2020.csv"
 }

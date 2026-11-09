@@ -40,6 +40,10 @@ class PreflightResult:
         return not self.revisoes_deduplicacao and not self.revisoes_qualis
 
 
+class DeduplicacaoPendenteError(ValueError):
+    """A Parte 1 terminou íntegra, mas com revisões de deduplicação pendentes."""
+
+
 def validar_manifest_deduplicacao(dir_out, ano, overrides_path):
     caminho=os.path.join(dir_out, f'{ano}_deduplicacao_manifest.json')
     if not os.path.isfile(caminho): raise ValueError('deduplicação ausente; execute a Parte 1')
@@ -49,15 +53,17 @@ def validar_manifest_deduplicacao(dir_out, ano, overrides_path):
     if manifesto.get('sha256_overrides_deduplicacao') != digest(overrides_path): raise ValueError('overrides alterados; execute a Parte 1')
     for name, expected in manifesto.get('arquivos',{}).items():
         if digest(os.path.join(dir_out,name)) != expected: raise ValueError('saída de deduplicação alterada; execute a Parte 1')
-    if manifesto.get('status') != 'SUCESSO': raise ValueError('deduplicação contém revisões; resolva a fila e execute a Parte 1')
+    if manifesto.get('status') != 'SUCESSO': raise DeduplicacaoPendenteError('deduplicação contém revisões; resolva a fila e execute a Parte 1')
     return manifesto
 
 
-def preflight_pontuacao(ocorrencias_path, overrides_path, nota_info, dir_out, ano):
+def preflight_pontuacao(ocorrencias_path, overrides_path, nota_info, dir_out, ano, todas_deduplicacoes=False):
     """Verifica revisões pendentes antes de calcular qualquer nota.
 
     As resoluções de deduplicação são aplicadas por ``deduplicar_publicacoes``
-    antes de esta função examinar ``resultado.revisoes``.
+    antes de esta função examinar ``resultado.revisoes``. Com
+    ``todas_deduplicacoes``, toda revisão de deduplicação da fila bloqueia,
+    inclusive fora do intervalo da nota.
     """
     linhas = pd.read_csv(ocorrencias_path, dtype=str, keep_default_na=False).to_dict('records')
     review_path=os.path.join(dir_out, f'{ano}_deduplicacao_revisao.csv')
@@ -88,7 +94,7 @@ def preflight_pontuacao(ocorrencias_path, overrides_path, nota_info, dir_out, an
 
     revisoes_deduplicacao=tuple(
         revisao for revisao in review_rows
-        if revisao_deduplicacao_afeta_nota(revisao)
+        if todas_deduplicacoes or revisao_deduplicacao_afeta_nota(revisao)
     )
     revisoes_qualis = tuple(
         linha for linha in linhas

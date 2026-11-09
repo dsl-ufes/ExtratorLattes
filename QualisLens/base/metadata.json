@@ -2,9 +2,17 @@
   "area": "COMPUTAÇÃO",
   "artefatos": {
     "qualis_unificado": {
+      "aliases_issn": {
+        "fontes": [
+          "issn_list_xlsx.csv",
+          "ImpactFactor2024.csv",
+          "ISSNJson/*.json"
+        ],
+        "quantidade_adicionada": 1323
+      },
       "arquivo": "Classificador/qualis-unificado.csv",
-      "quantidade_registros": 2785,
-      "sha256_csv": "d6fca8553fb04a316c5a413f29baddb096f40bd11ed7603980a6e6ed1207a114"
+      "quantidade_registros": 4108,
+      "sha256_csv": "734456da0d2e5fe0fcdfcb5330b6165539edc26674d81883a1f36a1101c2e4ab"
     }
   },
   "fontes": {

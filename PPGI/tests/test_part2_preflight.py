@@ -200,6 +200,28 @@ def test_blocked_run_keeps_reports_and_writes_manifest(tmp_path):
     assert json.loads((saida / '2024_execucao.json').read_text())['status'] == 'BLOQUEADO_REVISAO'
 
 
+def test_pending_deduplication_is_a_block_not_an_error(tmp_path):
+    linhas = [_linha(ano='2022'), _linha(ano='2022', titulo='Paper about reliability systems', sequencia='2')]
+    config, saida = _config(tmp_path, linhas)
+    ids = pd.read_csv(saida / '2024_publicacoes_ocorrencias.csv', dtype=str)['ocorrencia_id'].tolist()
+    revisao = saida / '2024_deduplicacao_revisao.csv'
+    pd.DataFrame(
+        [{'ocorrencia_a': ids[0], 'ocorrencia_b': ids[1], 'decisao': 'REVISAO_MANUAL', 'motivo': 'evidência insuficiente', 'score_titulo': '0.9'}],
+    ).to_csv(revisao, index=False)
+    caminho_manifest = saida / '2024_deduplicacao_manifest.json'
+    manifest = json.loads(caminho_manifest.read_text(encoding='utf-8'))
+    manifest['arquivos'][revisao.name] = hashlib.sha256(revisao.read_bytes()).hexdigest()
+    manifest.update({'status': 'REVISAO_PENDENTE', 'quantidade_revisoes': 1})
+    caminho_manifest.write_text(json.dumps(manifest), encoding='utf-8')
+
+    # Fora do intervalo da nota, mas ainda pendente: a Parte 1 não concluiu.
+    assert _part2_module().main([str(config)]) == 2
+    execucao = json.loads((saida / '2024_execucao.json').read_text())
+    assert execucao['status'] == 'BLOQUEADO_REVISAO'
+    assert execucao['bloqueios']['deduplicacao']['quantidade'] == 1
+    assert not (saida / '2024_docente.csv').exists()
+
+
 def test_success_publishes_both_reports_and_manifest(tmp_path):
     config, saida = _config(tmp_path, [_linha()])
     assert _part2_module().main([str(config)]) == 0

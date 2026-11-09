@@ -117,16 +117,22 @@ ______
 
 ### Arquivo Qualis
 
-Um arquivo em formato **csv** com uma primeira coluna **ISSN** e uma segunda coluna **Estrato**. Use `Classificador/qualis-unificado.csv`.
+Um arquivo em formato **csv** com uma primeira coluna **ISSN** e uma segunda coluna **Estrato**. Use `Classificador/qualis-todas-areas-2017-2020.csv`.
 
-Atualize-o a partir da raiz do repositório:
+O edital do PIIC abrange orientadores de todas as áreas, por isso ele usa a
+base de periódicos de **todas as áreas de avaliação** (quadriênio 2017-2020).
+Não use `Classificador/qualis-unificado.csv`: essa base contém somente os
+periódicos da área de Computação (2021-2024) e é usada pelo PPGI.
+
+Gere-o novamente a partir da raiz do repositório:
 
 ```bash
-python QualisNovo/criaArquivoQualis.py
+python QualisNovo/criaArquivoQualisTodasAreas.py
 ```
 
-O comando baixa e valida as bases oficiais da Plataforma Sucupira. Em seguida,
-ele inclui aliases Print-ISSN/E-ISSN das fontes versionadas em `QualisNovo/` - arquivos disponibilizados pela ferramenta [QLattes](https://github.com/nabormendonca/qlattes/tree/main/dist/data). Esse arquivo é utilizado para fazer associações de issn, um artigo pode ter dois issn: um print-issn e um e-issn. Ambos issn devem estar associados a um mesmo artigo e devem ser considerados no cálculo da nota.
+O comando lê o arquivo obtido na [Plataforma Sucupira](https://sucupira.capes.gov.br/sucupira/public/consultas/coleta/veiculoPublicacaoQualis/listaConsultaGeralPeriodicos.jsf) com as classificações dos periódicos em todas as áreas, versionado em `QualisNovo/`. Para um ISSN avaliado em mais de uma área, mantém o melhor estrato. Para usar outro export com as mesmas colunas, passe o caminho como argumento.
+
+Em seguida, ele inclui aliases Print-ISSN/E-ISSN das fontes versionadas em `QualisNovo/` - arquivos disponibilizados pela ferramenta [QLattes](https://github.com/nabormendonca/qlattes/tree/main/dist/data). Esse arquivo é utilizado para fazer associações de issn, um artigo pode ter dois issn: um print-issn e um e-issn. Ambos issn devem estar associados a um mesmo artigo e devem ser considerados no cálculo da nota.
 
 
 |ISSN|Estrato|

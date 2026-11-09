@@ -124,10 +124,15 @@ def main(argv=None):
         _escrever_json_atomico(manifest_path, manifesto)
 
         nota_info = NotaInfo(ppgi_config['nota_info'])
-        ppgiu.validar_manifest_deduplicacao(diretorio_saida, ano, ppgi_config['overrides_deduplicacao'])
-        preflight = ppgiu.preflight_pontuacao(ppgi_config['publicacoes_ocorrencias'], ppgi_config['overrides_deduplicacao'], nota_info, diretorio_saida, ano)
+        try:
+            ppgiu.validar_manifest_deduplicacao(diretorio_saida, ano, ppgi_config['overrides_deduplicacao'])
+            deduplicacao_pendente = False
+        except ppgiu.DeduplicacaoPendenteError:
+            # Saída da Parte 1 íntegra, mas com fila de revisão: é bloqueio, não erro.
+            deduplicacao_pendente = True
+        preflight = ppgiu.preflight_pontuacao(ppgi_config['publicacoes_ocorrencias'], ppgi_config['overrides_deduplicacao'], nota_info, diretorio_saida, ano, todas_deduplicacoes=deduplicacao_pendente)
         manifesto['bloqueios'] = _detalhes_bloqueios(preflight)
-        if not preflight.pode_pontuar:
+        if deduplicacao_pendente or not preflight.pode_pontuar:
             manifesto.update({'status': 'BLOQUEADO_REVISAO', 'fim': _agora()})
             _escrever_json_atomico(manifest_path, manifesto)
             _imprimir_bloqueio(preflight, manifest_path)

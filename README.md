@@ -22,7 +22,7 @@ publicações canônicas
 1. A Parte 1 lê os XMLs, classifica periódicos e eventos, e deduplica
    publicações entre docentes.
 2. A Parte 2 só calcula a pontuação quando não existem revisões pendentes de
-   Qualis ou deduplicação no intervalo avaliado.
+   deduplicação nem revisões Qualis no intervalo avaliado.
 3. As métricas externas não alteram a pontuação.
 
 ## Componentes
@@ -149,6 +149,8 @@ Observe o código de saída:
 
 - **`0`**: sucesso. `DadosPPGI/saida/<ano>_docente.csv` (nota por docente) e
   `<ano>_grupo.csv` (nota do programa) foram publicados.
+- **`2`**: bloqueio por revisão pendente. Nenhum relatório novo foi
+  publicado; volte ao Passo 2.
 - **`1`**: erro. Abra `DadosPPGI/saida/<ano>_execucao.json` e veja os campos
   `tipo_erro` e `mensagem_erro`.
 
@@ -223,6 +225,12 @@ python QualisNovo/criaArquivoQualis.py
 O comando baixa e valida as bases Sucupira antes de publicar os artefatos.
 Veja [QualisLens/README.md](QualisLens/README.md) para o fluxo offline e os
 detalhes da importação.
+
+A base de periódicos acima contém somente a área de Computação. O PIIC, que
+avalia orientadores de todas as áreas, usa uma base separada:
+`Classificador/qualis-todas-areas-2017-2020.csv`, gerada por
+`python QualisNovo/criaArquivoQualisTodasAreas.py`. Veja
+[PIIC/README.md](PIIC/README.md).
 
 ## Métricas externas
 

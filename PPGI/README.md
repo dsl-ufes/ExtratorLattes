@@ -12,7 +12,10 @@ Parte 2: auditoria aprovada -> pontuação -> relatórios
 Métricas: publicações canônicas -> snapshot SQLite -> ranking
 ```
 
-Execute os comandos a partir deste diretório:
+Execute os comandos a partir deste diretório. `DadosPPGI/config.json` roda o
+exemplo distribuído (currículos de `DadosPPGI/curriculos/`). Para uma execução
+com currículos reais, gere uma configuração própria com
+`scripts/preparar_execucao.py` (veja o Passo 0 no [README raiz](../README.md)).
 
 ```bash
 python -m pip install -r ../requirements.txt
@@ -85,10 +88,11 @@ Depois de alterar qualquer override, execute novamente a Parte 1.
 
 ## Parte 2: pontuação
 
-A Parte 2 verifica o manifesto e as filas de revisão antes do cálculo. Uma
-revisão de Qualis ou deduplicação dentro do intervalo da nota bloqueia a
-execução. Quando há bloqueio, o comando retorna `2` e não publica novos
-relatórios de pontuação.
+A Parte 2 verifica o manifesto e as filas de revisão antes do cálculo.
+Qualquer revisão de deduplicação pendente bloqueia a execução, porque a Parte 1
+não concluiu a formação das publicações canônicas. Uma revisão Qualis bloqueia
+quando está dentro do intervalo da nota. Quando há bloqueio, o comando retorna
+`2` e não publica novos relatórios de pontuação.
 
 Quando a pré-verificação passa, a Parte 2 lê as publicações canônicas e seus
 membros. Uma publicação canônica conta uma vez na nota do grupo. Cada docente
